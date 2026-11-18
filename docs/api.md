@@ -503,7 +503,7 @@ To use the market as well (show an item's price, sell turned-in items for a play
 
 ## Changelog
 
-- **0.6.1 (unreleased):** core and each add-on are separate repositories and releases; nothing in the API changed. `gradlew publishToMavenLocal` in this repository publishes `variableeconomy:core:<version>`, with sources and javadoc jars; its POM names no dependencies. The released mods are on CurseForge. The JitPack coordinates 0.6.0 names below (`com.github.The-Azotus.variable-economy:<artifact>:<tag>`) never worked: its build of `v0.6.0` never succeeded, and nothing is published on JitPack.
+- **0.6.1 (2026-11-17):** core and each add-on are separate repositories and releases; nothing in the API changed. `gradlew publishToMavenLocal` in this repository publishes `variableeconomy:core:<version>`, with sources and javadoc jars; its POM names no dependencies. The released mods are on CurseForge. The JitPack coordinates 0.6.0 names below (`com.github.The-Azotus.variable-economy:<artifact>:<tag>`) never worked: its build of `v0.6.0` never succeeded, and nothing is published on JitPack.
 
 - **0.6.0 (2026-11-14):** breaks every add-on. The mod is renamed, split into four mods, and its API is replaced.
 
