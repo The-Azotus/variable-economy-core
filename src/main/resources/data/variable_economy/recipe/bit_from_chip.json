@@ -1,0 +1,13 @@
+{
+  "type": "variable_economy:coin_exchange",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "variable_economy:chip"
+    }
+  ],
+  "result": {
+    "id": "variable_economy:bit",
+    "count": 8
+  }
+}

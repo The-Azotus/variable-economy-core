@@ -1,0 +1,34 @@
+{
+  "type": "variable_economy:coin_exchange",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    },
+    {
+      "item": "variable_economy:crown"
+    }
+  ],
+  "result": {
+    "id": "variable_economy:sun",
+    "count": 1
+  }
+}

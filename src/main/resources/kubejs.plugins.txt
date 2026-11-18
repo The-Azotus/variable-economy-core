@@ -1,0 +1,1 @@
+variableeconomy.core.compat.KubeJsBridge$Present

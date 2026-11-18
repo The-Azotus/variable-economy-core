@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "variable_economy:block/bank"
+    },
+    "facing=east": {
+      "model": "variable_economy:block/bank",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "variable_economy:block/bank",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "variable_economy:block/bank",
+      "y": 270
+    }
+  }
+}

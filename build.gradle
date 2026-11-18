@@ -1,0 +1,23 @@
+// Variable Economy (mod id variable_economy): the coins, the bank, accounts, the leaderboard, payouts, the audit log,
+// item gating and the core API. The build itself is in buildSrc (variable-economy.mod.gradle).
+plugins {
+    id 'variable-economy.mod'
+}
+
+description = 'Variable Economy: the bank, coins, accounts, leaderboard and item gating. ' +
+        'Add-ons use the variableeconomy.core.api package.'
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+dependencies {
+    // Optional: only compat/FtbTeamsBridge touches FTB Teams, only compat/StagesBridge ProgressiveStages, and only
+    // compat/KubeJsBridge KubeJS. The runs load all three, unless -PwithoutMods leaves them out.
+    compileAgainst('ftbteams')
+    compileAgainst('progressivestages')
+    compileAgainst('kubejs')
+    runWith('ftbteams')
+    runWith('progressivestages')
+    runWith('kubejs')
+}

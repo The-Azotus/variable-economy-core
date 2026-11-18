@@ -1,0 +1,34 @@
+{
+  "type": "variable_economy:coin_exchange",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    },
+    {
+      "item": "variable_economy:stack"
+    }
+  ],
+  "result": {
+    "id": "variable_economy:mark",
+    "count": 1
+  }
+}

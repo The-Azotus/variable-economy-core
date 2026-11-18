@@ -1,0 +1,34 @@
+{
+  "type": "variable_economy:coin_exchange",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    },
+    {
+      "item": "variable_economy:chip"
+    }
+  ],
+  "result": {
+    "id": "variable_economy:stack",
+    "count": 1
+  }
+}
