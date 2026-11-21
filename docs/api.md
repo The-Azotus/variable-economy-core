@@ -39,9 +39,9 @@ An add-on's package is there only when that add-on is installed, so check its mo
 
 Core and each add-on live in their own repositories and are released separately, each with its own version. The released mod jars are on CurseForge. Use core **0.6.0** or later: 0.5.0, the first version with an API, was Dynamic-Economy, before the mod was renamed and split, and its API is gone (see the [changelog](#changelog)).
 
-Once the mods' CurseForge projects are up, you can depend on the released jars through [CurseMaven](https://www.cursemaven.com/) (`curse.maven:<slug>-<project id>:<file id>`); this guide will give their IDs then. CurseMaven serves only the mod jars, without sources or javadoc.
+Depend on the released jars through [CurseMaven](https://www.cursemaven.com/), as `curse.maven:<name>-<project id>:<file id>` (the name is yours to choose; the IDs are CurseForge's). Core is CurseForge project **1818087**; its 0.6.1 file is 9710072, so core 0.6.1 is `curse.maven:variable-economy-1818087:9710072`. Each add-on's guide gives its own IDs. CurseMaven serves only the mod jars, without sources or javadoc.
 
-Until then, or to build against an unreleased core, publish core to your local Maven from this repository: clone it, check out the tag you target (tags start with `v`, such as `v0.6.1`), and run `gradlew publishToMavenLocal`. That publishes `variableeconomy:core:<version>`, the version without the `v` (`0.6.1`), with a sources jar and a javadoc jar, so your IDE shows the javadoc and the source. The javadoc covers only core's API packages. Each add-on's repository publishes its own artifact the same way (`variableeconomy:market:<version>` and so on), and its guide says how to use it.
+For the sources and javadoc, or to build against an unreleased core, publish core to your local Maven from this repository: clone it, check out the tag you target (tags start with `v`, such as `v0.6.1`), and run `gradlew publishToMavenLocal`. That publishes `variableeconomy:core:<version>`, the version without the `v` (`0.6.1`), with a sources jar and a javadoc jar, so your IDE shows the javadoc and the source. The javadoc covers only core's API packages. Each add-on's repository publishes its own artifact the same way (`variableeconomy:market:<version>` and so on), and its guide says how to use it.
 
 ### Gradle
 
@@ -52,8 +52,8 @@ Groovy (`build.gradle`):
 ```groovy
 repositories {
     exclusiveContent {
-        forRepository { mavenLocal() }
-        filter { includeGroup 'variableeconomy' }
+        forRepository { maven { url = 'https://cursemaven.com' } }
+        filter { includeGroup 'curse.maven' }
     }
 }
 
@@ -63,8 +63,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly 'variableeconomy:core:0.6.1'
-    localRuntime 'variableeconomy:core:0.6.1'
+    compileOnly 'curse.maven:variable-economy-1818087:9710072'
+    localRuntime 'curse.maven:variable-economy-1818087:9710072'
 }
 ```
 
@@ -73,8 +73,8 @@ Kotlin (`build.gradle.kts`):
 ```kotlin
 repositories {
     exclusiveContent {
-        forRepository { mavenLocal() }
-        filter { includeGroup("variableeconomy") }
+        forRepository { maven("https://cursemaven.com") }
+        filter { includeGroup("curse.maven") }
     }
 }
 
@@ -82,12 +82,14 @@ val localRuntime: Configuration by configurations.creating
 configurations.runtimeClasspath { extendsFrom(localRuntime) }
 
 dependencies {
-    compileOnly("variableeconomy:core:0.6.1")
-    localRuntime("variableeconomy:core:0.6.1")
+    compileOnly("curse.maven:variable-economy-1818087:9710072")
+    localRuntime("curse.maven:variable-economy-1818087:9710072")
 }
 ```
 
-- The `exclusiveContent` block takes only that group from your local Maven, and nothing else from it.
+From your local Maven instead (after `gradlew publishToMavenLocal` here), the repository is `mavenLocal()` with `includeGroup 'variableeconomy'`, and core is `variableeconomy:core:0.6.1`; that one comes with its sources and javadoc.
+
+- The `exclusiveContent` block takes only that group from that repository, and nothing else from it.
 - The published POM names no dependencies. Core's own optional dependencies (FTB Teams, ProgressiveStages, KubeJS) aren't pulled in: add one to your dev runtime yourself if your add-on works with it. An add-on you build against too (the market, say) is a dependency of its own, next to core.
 - To try your add-on against unreleased changes, run `gradlew publishToMavenLocal` on the branch you want instead of a tag; it publishes that branch's `mod_version` from `gradle.properties`.
 
