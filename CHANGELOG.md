@@ -2,7 +2,7 @@
 
 What changed in each release of core, for players and server admins. Mod and add-on authors: the API's changes are in the [add-on guide's changelog](docs/api.md#changelog). The market, contracts and exchange keep their own changelogs in their repositories. Releases before 0.6.0 were Dynamic-Economy, a single mod, and aren't listed here.
 
-## 0.6.2 (unreleased)
+## 0.6.2 (2026-11-21)
 
 Update the server and every client together: the bank screen's packets changed, so a 0.6.1 client can't join a 0.6.2 server.
 
