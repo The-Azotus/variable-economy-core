@@ -7,7 +7,7 @@ import variableeconomy.core.client.ClientBankState;
 
 /** The bank's packets. */
 public final class BankNetwork {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
 
     private BankNetwork() {
     }

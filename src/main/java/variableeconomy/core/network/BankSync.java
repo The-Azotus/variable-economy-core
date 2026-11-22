@@ -116,7 +116,16 @@ public final class BankSync {
             accounts.add(new BankPayloads.AccountLine(info.id().value(), cut(info.name()), info.kind(), role, info.balance(), info.owner()));
             if (info.id().equals(showing) && info.kind() != AccountKind.PERSONAL) {
                 for (AccountMember member : info.members()) {
-                    members.add(new BankPayloads.MemberLine(member.player(), cut(AccountsService.name(server, member.player())), member.role()));
+                    members.add(new BankPayloads.MemberLine(member.player(), cut(AccountsService.name(server, member.player())), member.role(), false));
+                }
+                if (info.owner().equals(me) && info.kind() == AccountKind.NAMED) {
+                    // The owner also sees the invitations still open, to withdraw them.
+                    // The packet holds at most MAX_MEMBER_LINES lines.
+                    CoreServices.ACCOUNTS.invitedTo(info.id()).forEach((invitee, offered) -> {
+                        if (members.size() < BankPayloads.MAX_MEMBER_LINES) {
+                            members.add(new BankPayloads.MemberLine(invitee, cut(AccountsService.name(server, invitee)), offered, true));
+                        }
+                    });
                 }
             }
         }

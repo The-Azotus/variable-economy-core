@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import variableeconomy.core.CoreModule;
 import variableeconomy.core.CoreSettings;
 import variableeconomy.core.api.AccountId;
+import variableeconomy.core.api.AccountInfo;
 import variableeconomy.core.api.CoreApi;
 import variableeconomy.core.api.PaymentResult;
 import variableeconomy.core.api.Reason;
@@ -24,6 +25,7 @@ import variableeconomy.core.service.CoreServices;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -127,11 +129,18 @@ public final class PayCommand {
                 default -> fail(ctx, attempt.key());
             };
         }
-        Component paid = Component.translatable(KEY + attempt.key(), recipient.getName(), money, fee);
+        // Paid into a named or party account, which others may share: both messages name it.
+        Optional<String> into = attempt.to().equals(CoreApi.accounts().personal(recipient.getId())) ? Optional.empty()
+                : CoreApi.accounts().get(server, attempt.to()).map(AccountInfo::name);
+        Component paid = into.isEmpty() ? Component.translatable(KEY + attempt.key(), recipient.getName(), money, fee)
+                : attempt.fee() > 0 ? Component.translatable(KEY + "paid_fee_account", recipient.getName(), money, fee, into.get())
+                : Component.translatable(KEY + "paid_account", recipient.getName(), money, into.get());
         ctx.getSource().sendSuccess(() -> paid, false);
         ServerPlayer online = server.getPlayerList().getPlayer(recipient.getId());
         if (online != null) {
-            online.sendSystemMessage(Component.translatable(KEY + "received", sender.getGameProfile().getName(), money));
+            String from = sender.getGameProfile().getName();
+            online.sendSystemMessage(into.isEmpty() ? Component.translatable(KEY + "received", from, money)
+                    : Component.translatable(KEY + "received_account", from, money, into.get()));
         }
         return (int) Math.min(amount, Integer.MAX_VALUE);
     }

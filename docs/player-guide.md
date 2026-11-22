@@ -44,23 +44,23 @@ Right-click a Bank Card to open the bank screen anywhere, leaderboard included, 
 You always have a **personal account**. Depending on the server you may have others:
 
 - **Named accounts** you open yourself, for savings or a group, if the server allows extra accounts.
-- **Shared accounts**: named accounts with other members, if the server allows sharing. The owner invites players; you join by accepting. A **member** deposits, spends and withdraws; a **deposit-only** member can only pay in. When the owner leaves, the member who joined first becomes owner.
+- **Shared accounts**: named accounts with other members, if the server allows sharing. The owner invites players; you join by accepting. An invitation lasts until the server restarts; the owner can withdraw it, and it ends if the account changes owner. A **member** deposits, spends and withdraws; a **deposit-only** member can only pay in. When the owner leaves, the member who joined first becomes owner.
 - **Your FTB Teams party's account**, on servers with FTB Teams: every party member uses it, and its owner is the party's owner. If the party is deleted, its money goes to the party's owner.
 
 **Your active account** pays for what you buy, receives what you sell and what you're paid (contracts, the exchange, `/pay`), and holds your contract deposits and exchange orders. Pick it with **Use for trades** in the bank screen or `/bank account use <name>`. If you can no longer spend from it (you left, were made deposit-only, or it was deleted), your personal account is active again.
 
-**The Accounts screen** (**Accounts…** in the bank screen) lists your accounts; click one to show it. You can open a new one, accept or decline invitations, and leave an account. An account's owner also invites players (by name, as a member or deposit-only), changes a member's role, makes someone else owner (click twice), removes members, and deletes the account (click twice; only an empty one, with no open exchange buy orders and no contract deposits held for it). The same, by command:
+**The Accounts screen** (**Accounts…** in the bank screen) lists your accounts; click one to show it. You can open a new one, accept or decline invitations, and leave an account. An account's owner also invites players (by name, as a member or deposit-only; invitations not yet answered are listed after the members, with **Cancel** to withdraw one), changes a member's role, makes someone else owner (click twice), removes members, and deletes the account (click twice; only an empty one, with no open exchange buy orders and no contract deposits held for it). The same, by command:
 
 | Command | What it does |
 | --- | --- |
 | `/bank account` | Lists your accounts, which one is active, and your invitations. |
-| `/bank account info <name>` | An account's owner, members, roles and balance. `personal` names your own account and `party` your FTB Teams party's. |
+| `/bank account info <name>` | An account's owner, members, roles and balance; its owner also sees who is invited. `personal` names your own account and `party` your FTB Teams party's. |
 | `/bank account use <name>` | Makes it your active account. |
 | `/bank account create <name>` | Opens a named account. Names are one word: letters, digits, `_` and `-`. |
 | `/bank account invite <name> <player> [member\|deposit_only]` | Owner only: invites an online player. |
 | `/bank account join <name>`, `decline <name>` | Accepts or turns down an invitation. |
 | `/bank account leave <name>` | Leaves an account. The last member can't leave; they delete it instead, once it's empty. |
-| `/bank account remove <name> <player>` | Owner only: removes a member. |
+| `/bank account remove <name> <player>` | Owner only: removes a member, or withdraws an invitation the player hasn't answered. |
 | `/bank account role <name> <player> <owner\|member\|deposit_only>` | Owner only: changes a member's role; `owner` hands the account over. |
 | `/bank account delete <name>` | Owner only: deletes an empty account. |
 
@@ -68,7 +68,7 @@ These commands, `/bank history`, `/bank top` and `/pay` work everywhere, even on
 
 ### Paying other players
 
-`/pay <player> <amount>` pays another player from your active account into theirs, online or not. Some servers charge a fee on top (destroyed, not given to anyone) or set a smallest payment; the message says what was taken. If you both use the same shared account, nothing moves.
+`/pay <player> <amount>` pays another player from your active account into theirs, online or not. Some servers charge a fee on top (destroyed, not given to anyone) or set a smallest payment; the message says what was taken. If their active account is a named or party account, the money goes there, and both messages name it. If you both use the same shared account, nothing moves.
 
 ## Coins
 

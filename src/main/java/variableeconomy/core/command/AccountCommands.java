@@ -109,6 +109,18 @@ public final class AccountCommands {
         }
         ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "info", label(info), kind(info.kind()),
                 AccountsService.name(player.server, info.owner()), members, CoreApi.formatMoney(info.balance())), false);
+        // The owner also sees whom they have invited, so they can withdraw an invitation with "remove".
+        Map<UUID, AccountRole> invited = info.owner().equals(player.getUUID()) ? CoreServices.ACCOUNTS.invitedTo(info.id()) : Map.of();
+        if (!invited.isEmpty()) {
+            MutableComponent list = Component.empty();
+            invited.forEach((who, offered) -> {
+                if (!list.getSiblings().isEmpty()) {
+                    list.append(", ");
+                }
+                list.append(Component.translatable(KEY + "info.member", AccountsService.name(player.server, who), role(offered)));
+            });
+            ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "info.invited", list), false);
+        }
         return 1;
     }
 
@@ -234,6 +246,13 @@ public final class AccountCommands {
         }
         if (target.get().getId().equals(player.getUUID())) {
             return fail(ctx, "remove_self");
+        }
+        if (found.get().roleOf(target.get().getId()).isEmpty()
+                && CoreServices.ACCOUNTS.cancelInvite(found.get().id(), target.get().getId())) {
+            // Not a member, but invited: the owner withdraws the invitation.
+            ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "invite_cancelled", target.get().getName(),
+                    found.get().name()), false);
+            return 1;
         }
         BankResult result = CoreApi.accounts().removeMember(player.server, found.get().id(), target.get().getId());
         if (result != BankResult.OK) {

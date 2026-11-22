@@ -96,15 +96,28 @@ public final class BankService {
             return Outcome.fail(Result.TOO_LARGE);
         }
 
-        // Nothing has changed yet. Everything below always succeeds: the account takes the whole total (checked above).
+        // The payment is the first change, and changes nothing if it is refused. Taking the coins after it can't fail.
+        PaymentResult paid = CoreApi.money().pay(player.server, account, total, Reason.by(COINS_IN, player.getUUID()));
+        if (!paid.ok()) {
+            return Outcome.fail(switch (paid.result()) {
+                case TOO_LARGE -> Result.TOO_LARGE;
+                case NO_ACCOUNT, NOT_ALLOWED -> Result.NOT_ALLOWED;
+                default -> Result.BANK_UNAVAILABLE;
+            });
+        }
+        takeCoins(player, coins);
+        return new Outcome(Result.OK, total);
+    }
+
+    /** Removes every plain coin of {@code coins} from the player's main inventory. */
+    private static void takeCoins(ServerPlayer player, List<Denomination> coins) {
+        NonNullList<ItemStack> items = player.getInventory().items;
         for (int slot = 0; slot < items.size(); slot++) {
             if (coinOf(coins, items.get(slot)) != null) {
                 items.set(slot, ItemStack.EMPTY);
             }
         }
         player.getInventory().setChanged();
-        CoreApi.money().pay(player.server, account, total, Reason.by(COINS_IN, player.getUUID()));
-        return new Outcome(Result.OK, total);
     }
 
     /**

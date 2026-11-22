@@ -12,7 +12,9 @@ import variableeconomy.core.CoreModule;
 import variableeconomy.core.api.AccountId;
 import variableeconomy.core.api.CoreApi;
 import variableeconomy.core.api.Reason;
+import variableeconomy.core.data.AccountRegistry;
 import variableeconomy.core.data.OwedPayments;
+import variableeconomy.core.service.AccountsService;
 import variableeconomy.core.service.CoreServices;
 import variableeconomy.core.service.Leaderboard;
 
@@ -94,17 +96,38 @@ public final class LeaderboardTests {
     }
 
     @GameTest(template = EMPTY)
+    public static void playersAreNamedWithoutTheProfileCache(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CoreFixture f = new CoreFixture(helper);
+        UUID me = f.player.getUUID();
+        helper.assertValueEqual(server.getProfileCache() == null ? Optional.empty() : server.getProfileCache().get(me), Optional.empty(),
+                "test players aren't in the profile cache");
+        helper.assertValueEqual(AccountRegistry.get(server).personalName(me), Optional.of("market-test"), "core remembered the name");
+        helper.assertValueEqual(Leaderboard.profile(server, me).map(GameProfile::getName), Optional.of("market-test"), "so they are named");
+        helper.assertValueEqual(AccountsService.name(server, me), "market-test", "in member lists and history too");
+
+        // A name several players joined with names none of them; a unique one names its player.
+        UUID unique = UUID.randomUUID();
+        String name = accountName("n");
+        AccountRegistry.get(server).registerPersonal(unique);
+        AccountRegistry.get(server).setPersonalName(unique, name);
+        helper.assertValueEqual(AccountRegistry.get(server).personalByName(name.toUpperCase(java.util.Locale.ROOT)), Optional.of(unique),
+                "found by name, ignoring case");
+        helper.assertValueEqual(AccountRegistry.get(server).personalByName("market-test"), Optional.empty(),
+                "every test player is called market-test, so that name is ambiguous");
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY)
     public static void bankTopPrintsTheBoard(GameTestHelper helper) {
         CoreFixture f = new CoreFixture(helper);
         String key = "command.variable_economy.top.";
         f.deposit(10);
         try {
             List<String> board = commandKeysAs(helper, f.player, "bank top");
-            // Test players have no cached profile, so none is named on the board: it's empty, or holds real players.
-            if (!board.equals(List.of(key + "empty"))) {
-                helper.assertValueEqual(board.get(0), key + "header", "a header: " + board);
-                helper.assertValueEqual(board.get(board.size() - 1), key + "unranked", "and the player's own place");
-            }
+            // Test players aren't in the server's profile cache: they're named by the name core remembered when it saw them.
+            helper.assertValueEqual(board.get(0), key + "header", "a header: " + board);
+            helper.assertValueEqual(board.get(board.size() - 1), key + "you", "and the player's own place: they are ranked");
             boolean enabled = CoreConfig.LEADERBOARD_ENABLED.get();
             CoreConfig.LEADERBOARD_ENABLED.set(false);
             try {

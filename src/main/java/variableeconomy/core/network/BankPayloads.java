@@ -46,14 +46,21 @@ public final class BankPayloads {
                 AccountLine::new);
     }
 
-    /** One member of the shown account, longest-standing first. */
-    public record MemberLine(UUID player, String name, AccountRole role) {
+    /**
+     * One member of the shown account, longest-standing first; for its owner, then each player invited who hasn't
+     * answered yet ({@code invited}, with the role offered).
+     */
+    public record MemberLine(UUID player, String name, AccountRole role, boolean invited) {
         static final StreamCodec<ByteBuf, MemberLine> CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC, MemberLine::player,
                 ByteBufCodecs.stringUtf8(64), MemberLine::name,
                 ByteBufCodecs.idMapper(i -> AccountRole.values()[i], AccountRole::ordinal), MemberLine::role,
+                ByteBufCodecs.BOOL, MemberLine::invited,
                 MemberLine::new);
     }
+
+    /** The most member lines one bank state carries: members, then (for the owner) open invitations. */
+    public static final int MAX_MEMBER_LINES = 256;
 
     /** An invitation the player holds: an account and the role it offers. */
     public record InviteLine(UUID account, String name, AccountRole role) {
@@ -77,7 +84,7 @@ public final class BankPayloads {
                             boolean sharedEnabled) implements CustomPacketPayload {
         public static final Type<BankState> TYPE = payloadType("bank_state");
         private static final StreamCodec<ByteBuf, List<AccountLine>> ACCOUNTS = AccountLine.CODEC.apply(ByteBufCodecs.list(256));
-        private static final StreamCodec<ByteBuf, List<MemberLine>> MEMBERS = MemberLine.CODEC.apply(ByteBufCodecs.list(256));
+        private static final StreamCodec<ByteBuf, List<MemberLine>> MEMBERS = MemberLine.CODEC.apply(ByteBufCodecs.list(MAX_MEMBER_LINES));
         private static final StreamCodec<ByteBuf, List<InviteLine>> INVITES = InviteLine.CODEC.apply(ByteBufCodecs.list(256));
         // Written out by hand: StreamCodec.composite takes at most six fields.
         public static final StreamCodec<RegistryFriendlyByteBuf, BankState> CODEC = StreamCodec.of(

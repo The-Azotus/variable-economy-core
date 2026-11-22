@@ -133,6 +133,13 @@ public final class AccountsScreen extends Screen {
                 }
                 int y = top + TOP + 24 + i * ROW_HEIGHT;
                 UUID account = line.get().id();
+                if (member.invited()) {
+                    // An invitation not yet answered: the owner can only withdraw it.
+                    addRenderableWidget(Button.builder(Component.translatable("screen.variable_economy.accounts.cancel_invite"),
+                                    b -> send(AccountAction.REMOVE, account, "", member.player(), AccountRole.MEMBER))
+                            .bounds(rightX + rightWidth - 46, y, 46, ROW_HEIGHT - 1).build());
+                    continue;
+                }
                 AccountRole next = member.role() == AccountRole.MEMBER ? AccountRole.DEPOSIT_ONLY : AccountRole.MEMBER;
                 addRenderableWidget(Button.builder(roleText(member.role()),
                                 b -> send(AccountAction.SET_ROLE, account, "", member.player(), next))
@@ -329,6 +336,13 @@ public final class AccountsScreen extends Screen {
                 int rowY = y + TOP + 24 + i * ROW_HEIGHT;
                 if (i % 2 == 1) {
                     graphics.fill(rightX, rowY, rightX + rightWidth, rowY + ROW_HEIGHT - 1, BankScreen.ROW_ALT);
+                }
+                if (member.invited()) {
+                    String name = Component.translatable("screen.variable_economy.accounts.invited", member.name()).getString();
+                    graphics.drawString(font, font.plainSubstrByWidth(name, rightWidth - 130), rightX + 2, rowY + 4, BankScreen.TEXT_DIM, false);
+                    Component role = ClientBankState.role(member.role());
+                    graphics.drawString(font, role, rightX + rightWidth - 50 - font.width(role), rowY + 4, BankScreen.TEXT_DIM, false);
+                    continue;
                 }
                 graphics.drawString(font, font.plainSubstrByWidth(member.name(), rightWidth - 190), rightX + 2, rowY + 4,
                         member.role() == AccountRole.OWNER ? BankScreen.TEXT_MONEY : BankScreen.TEXT, false);

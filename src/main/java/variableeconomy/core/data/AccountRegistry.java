@@ -41,7 +41,8 @@ public final class AccountRegistry extends SavedData {
      *
      * @param kind    what sort of account it is
      * @param owner   its owner; for an ended account, the owner it had when it ended
-     * @param name    a named or party account's name; empty for a personal account, which shows its player's name
+     * @param name    a named or party account's name; for a personal account, the name its player last joined with
+     *                (empty until then), used only when the server's profile cache doesn't know them
      * @param members a named account's members in the order they joined, owner included; empty for other kinds
      * @param party   a party account's FTB Teams party
      * @param ended   whether it has ended
@@ -99,6 +100,40 @@ public final class AccountRegistry extends SavedData {
         entries.put(player, new Entry(AccountKind.PERSONAL, player, "", List.of(), Optional.empty(), false));
         setDirty();
         return true;
+    }
+
+    /**
+     * Remembers the name {@code player} last joined with, so they are named even once the server's own profile cache
+     * has forgotten them. Does nothing for a player without a personal account.
+     */
+    public void setPersonalName(UUID player, String name) {
+        Entry old = entries.get(player);
+        if (old != null && old.kind() == AccountKind.PERSONAL && !old.name().equals(name)) {
+            entries.put(player, new Entry(AccountKind.PERSONAL, player, name, List.of(), Optional.empty(), false));
+            setDirty();
+        }
+    }
+
+    /** The name {@code player} last joined with, if known. */
+    public Optional<String> personalName(UUID player) {
+        Entry entry = entries.get(player);
+        return entry != null && entry.kind() == AccountKind.PERSONAL && !entry.name().isEmpty()
+                ? Optional.of(entry.name()) : Optional.empty();
+    }
+
+    /** The one player who last joined with {@code name}, ignoring case; empty if none or several did. */
+    public Optional<UUID> personalByName(String name) {
+        UUID found = null;
+        for (Map.Entry<UUID, Entry> e : entries.entrySet()) {
+            Entry entry = e.getValue();
+            if (entry.kind() == AccountKind.PERSONAL && entry.name().equalsIgnoreCase(name)) {
+                if (found != null) {
+                    return Optional.empty();
+                }
+                found = e.getKey();
+            }
+        }
+        return Optional.ofNullable(found);
     }
 
     /** Makes a new named account with {@code owner} its only member. The caller has checked the rules. */

@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
  * bank.
  * <p>
  * The {@link Accounts} calls act with the server's authority; the commands and the bank screen check who asks.
- * Invitations, which players accept before joining an account, are kept here until the server stops. Server thread
- * only.
+ * Invitations, which players accept before joining an account, are kept here until the server stops; the account's
+ * owner can withdraw them, and they end when the account ends or changes owner. Server thread only.
  */
 public final class AccountsService implements Accounts {
     /** The reason for an ended account's balance passing to a player. */
@@ -196,7 +196,7 @@ public final class AccountsService implements Accounts {
             return BankResult.NOT_EMPTY;
         }
         AccountRegistry.get(server).end(id.value(), entry.owner());
-        invites.values().forEach(offers -> offers.remove(id));
+        forgetInvites(id);
         CoreEvents.post(new AccountEvent.Deleted(server, id, 0, Optional.empty()));
         return BankResult.OK;
     }
@@ -257,6 +257,10 @@ public final class AccountsService implements Accounts {
             registry.chosenActive(player).filter(id.value()::equals).ifPresent(was -> registry.setActive(player, player));
         }
         removeInvite(player, id);
+        if (role == AccountRole.OWNER) {
+            // The new owner didn't offer the invitations still open.
+            forgetInvites(id);
+        }
         events.forEach(CoreEvents::post);
         return BankResult.OK;
     }
@@ -292,6 +296,8 @@ public final class AccountsService implements Accounts {
             members.set(0, new AccountMember(heir.player(), AccountRole.OWNER));
             owner = heir.player();
             events.add(new AccountEvent.RoleChanged(server, id, heir.player(), heir.role(), AccountRole.OWNER));
+            // The new owner didn't offer the invitations still open.
+            forgetInvites(id);
         }
         AccountRegistry registry = AccountRegistry.get(server);
         registry.setMembers(id.value(), owner, members);
@@ -356,6 +362,32 @@ public final class AccountsService implements Accounts {
     /** Turns an invitation down; returns whether there was one. */
     public boolean decline(UUID player, AccountId id) {
         return removeInvite(player, id);
+    }
+
+    /** The invitations still open to {@code id}: each invited player and the role offered, in the order invited. */
+    public Map<UUID, AccountRole> invitedTo(AccountId id) {
+        Map<UUID, AccountRole> invited = new LinkedHashMap<>();
+        invites.forEach((player, offers) -> {
+            AccountRole role = offers.get(id);
+            if (role != null) {
+                invited.put(player, role);
+            }
+        });
+        return invited;
+    }
+
+    /**
+     * Withdraws {@code player}'s invitation to {@code id}; returns whether there was one. The caller has checked that
+     * whoever asked owns the account.
+     */
+    public boolean cancelInvite(AccountId id, UUID player) {
+        return removeInvite(player, id);
+    }
+
+    /** Forgets every invitation to {@code id}: when it ends, or changes owner. */
+    private void forgetInvites(AccountId id) {
+        invites.values().forEach(offers -> offers.remove(id));
+        invites.values().removeIf(Map::isEmpty);
     }
 
     private boolean removeInvite(UUID player, AccountId id) {
@@ -468,7 +500,7 @@ public final class AccountsService implements Accounts {
             BalanceEvents.changed(server, to, heirBefore, bank.accountOf(heir).balance(), paid, reason);
         }
         if (AccountRegistry.get(server).end(id.value(), heir)) {
-            invites.values().forEach(offers -> offers.remove(id));
+            forgetInvites(id);
             CoreEvents.post(new AccountEvent.Deleted(server, id, paid, paid > 0 ? Optional.of(to) : Optional.empty()));
         }
         return paid;
@@ -485,9 +517,13 @@ public final class AccountsService implements Accounts {
         endPartyAccountsIfOff(server);
     }
 
-    /** The server has seen {@code player}: their personal account exists from now on. */
+    /**
+     * The server has seen {@code player}: their personal account exists from now on, and their current name is
+     * remembered for when the server's profile cache no longer knows them.
+     */
     public void seen(ServerPlayer player) {
         seenPlayer(player.server, player.getUUID());
+        AccountRegistry.get(player.server).setPersonalName(player.getUUID(), player.getGameProfile().getName());
     }
 
     /** Registers {@code player}'s personal account, posting its creation if it is new. */

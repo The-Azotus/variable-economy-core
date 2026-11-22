@@ -167,13 +167,21 @@ public final class Leaderboard {
         return Optional.of(personal ? profile.get().getName() : entry.get().name());
     }
 
-    /** An online player's profile, or one the server has seen before (offline players, by their last name). */
+    /**
+     * An online player's profile, or one the server has seen before (offline players, by their last name): from the
+     * server's profile cache, or else from the name core remembered when they last joined, since the cache keeps only
+     * the players seen most recently.
+     */
     public static Optional<GameProfile> profile(MinecraftServer server, UUID id) {
         ServerPlayer online = server.getPlayerList().getPlayer(id);
         if (online != null) {
             return Optional.of(online.getGameProfile());
         }
         GameProfileCache cache = server.getProfileCache();
-        return cache == null ? Optional.empty() : cache.get(id);
+        Optional<GameProfile> cached = cache == null ? Optional.empty() : cache.get(id);
+        if (cached.isPresent()) {
+            return cached;
+        }
+        return AccountRegistry.get(server).personalName(id).map(name -> new GameProfile(id, name));
     }
 }

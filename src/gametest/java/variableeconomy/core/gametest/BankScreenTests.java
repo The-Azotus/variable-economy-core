@@ -19,7 +19,9 @@ import variableeconomy.core.network.BankPayloads;
 import variableeconomy.core.network.BankPayloads.AccountAction;
 import variableeconomy.core.network.BankSync;
 import variableeconomy.core.service.BankService;
+import variableeconomy.core.service.CoreServices;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -89,6 +91,47 @@ public final class BankScreenTests {
             } finally {
                 f.player.containerMenu = f.player.inventoryMenu;
                 CoreApi.accounts().delete(server, theirs);
+            }
+        });
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY)
+    public static void theOwnerSeesAndWithdrawsInvitations(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CoreFixture owner = new CoreFixture(helper);
+        CoreFixture member = new CoreFixture(helper);
+        CoreFixture invitee = new CoreFixture(helper);
+        withAccounts(() -> {
+            AccountId account = CoreApi.accounts().create(server, owner.player.getUUID(), accountName("scr")).account().orElseThrow();
+            CoreApi.accounts().setMember(server, account, member.player.getUUID(), AccountRole.MEMBER);
+            CoreServices.ACCOUNTS.invite(server, account, invitee.player.getUUID(), AccountRole.DEPOSIT_ONLY);
+            try {
+                BankSync.show(owner.player, account);
+                List<BankPayloads.MemberLine> lines = BankSync.stateFor(owner.player).members();
+                helper.assertValueEqual(lines.size(), 3, "the owner sees both members and the invitation: " + lines);
+                BankPayloads.MemberLine invited = lines.get(2);
+                helper.assertTrue(invited.invited() && invited.player().equals(invitee.player.getUUID())
+                        && invited.role() == AccountRole.DEPOSIT_ONLY, "the invitation comes last, with the role offered: " + invited);
+                helper.assertTrue(lines.subList(0, 2).stream().noneMatch(BankPayloads.MemberLine::invited), "members aren't invitations");
+
+                BankSync.show(member.player, account);
+                helper.assertValueEqual(BankSync.stateFor(member.player).members().size(), 2, "a member doesn't see invitations");
+
+                BankPayloads.AccountOutcome notOwner = AccountRequests.handle(new BankPayloads.AccountRequest(
+                        BankPayloads.AccountAction.REMOVE, account.value(), "", invitee.player.getUUID(), AccountRole.MEMBER), member.player);
+                helper.assertFalse(notOwner.ok(), "only the owner withdraws an invitation");
+                BankPayloads.AccountOutcome withdrawn = AccountRequests.handle(new BankPayloads.AccountRequest(
+                        BankPayloads.AccountAction.REMOVE, account.value(), "", invitee.player.getUUID(), AccountRole.MEMBER), owner.player);
+                helper.assertTrue(withdrawn.ok() && withdrawn.key().endsWith("done.invite_cancelled"), "the owner withdraws it: " + withdrawn);
+                helper.assertValueEqual(BankSync.stateFor(owner.player).members().size(), 2, "and it's gone from the list");
+                BankPayloads.AccountOutcome again = AccountRequests.handle(new BankPayloads.AccountRequest(
+                        BankPayloads.AccountAction.REMOVE, account.value(), "", invitee.player.getUUID(), AccountRole.MEMBER), owner.player);
+                helper.assertTrue(!again.ok() && again.key().endsWith("result.not_a_member"), "with none left, as before: " + again);
+            } finally {
+                CoreServices.ACCOUNTS.cancelInvite(account, invitee.player.getUUID());
+                CoreApi.accounts().removeMember(server, account, member.player.getUUID());
+                CoreApi.accounts().delete(server, account);
             }
         });
         helper.succeed();

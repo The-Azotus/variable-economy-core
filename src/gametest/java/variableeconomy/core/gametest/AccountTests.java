@@ -229,6 +229,53 @@ public final class AccountTests {
     }
 
     @GameTest(template = EMPTY)
+    public static void ownersWithdrawInvitationsAndNewOwnersStartAfresh(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CoreFixture a = new CoreFixture(helper);
+        CoreFixture b = new CoreFixture(helper);
+        CoreFixture c = new CoreFixture(helper);
+        CoreFixture d = new CoreFixture(helper);
+        UUID ub = b.player.getUUID();
+        UUID uc = c.player.getUUID();
+        UUID ud = d.player.getUUID();
+        withAccounts(() -> {
+            String name = accountName("inv");
+            AccountId id = CoreApi.accounts().create(server, a.player.getUUID(), name).account().orElseThrow();
+            try {
+                // Withdrawn with "remove": the invitation is gone, and joining finds none.
+                CoreServices.ACCOUNTS.invite(server, id, ub, AccountRole.MEMBER);
+                helper.assertValueEqual(CoreServices.ACCOUNTS.invitedTo(id), Map.of(ub, AccountRole.MEMBER), "B is invited");
+                // The command and the screen withdraw it the same way (BankScreenTests); test players aren't online,
+                // so the command can't name them.
+                helper.assertTrue(CoreServices.ACCOUNTS.cancelInvite(id, ub), "the owner withdraws it");
+                helper.assertValueEqual(CoreServices.ACCOUNTS.invitedTo(id), Map.of(), "no invitation left");
+                helper.assertValueEqual(CoreServices.ACCOUNTS.accept(server, ub, id), BankResult.NOT_ALLOWED, "B can't join");
+                helper.assertFalse(CoreServices.ACCOUNTS.cancelInvite(id, ub), "there's nothing left to withdraw");
+
+                // A new owner didn't offer the invitations still open: handing over ends them.
+                CoreApi.accounts().setMember(server, id, uc, AccountRole.MEMBER);
+                CoreServices.ACCOUNTS.invite(server, id, ub, AccountRole.MEMBER);
+                helper.assertValueEqual(CoreApi.accounts().setMember(server, id, uc, AccountRole.OWNER), BankResult.OK, "C becomes owner");
+                helper.assertValueEqual(CoreServices.ACCOUNTS.invitedTo(id), Map.of(), "B's invitation ended with the handover");
+
+                // So does the owner leaving.
+                CoreServices.ACCOUNTS.invite(server, id, ud, AccountRole.DEPOSIT_ONLY);
+                helper.assertValueEqual(CoreApi.accounts().removeMember(server, id, uc), BankResult.OK, "C leaves; A inherits");
+                helper.assertValueEqual(CoreServices.ACCOUNTS.invitedTo(id), Map.of(), "D's invitation ended too");
+                helper.assertValueEqual(CoreServices.ACCOUNTS.accept(server, ud, id), BankResult.NOT_ALLOWED, "D can't join");
+            } finally {
+                CoreServices.ACCOUNTS.cancelInvite(id, ub);
+                CoreServices.ACCOUNTS.cancelInvite(id, ud);
+                CoreApi.accounts().accessibleBy(server, a.player.getUUID()).stream().filter(x -> x.id().equals(id)).findFirst()
+                        .ifPresent(info -> info.members().stream().filter(m -> m.role() != AccountRole.OWNER)
+                                .forEach(m -> CoreApi.accounts().removeMember(server, id, m.player())));
+                CoreApi.accounts().delete(server, id);
+            }
+        });
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY)
     public static void accountsAndActiveChoicesSurviveASave(GameTestHelper helper) {
         AccountRegistry registry = new AccountRegistry();
         UUID owner = UUID.randomUUID();

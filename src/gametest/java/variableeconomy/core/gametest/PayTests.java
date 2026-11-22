@@ -1,5 +1,6 @@
 package variableeconomy.core.gametest;
 
+import com.google.gson.JsonObject;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
@@ -15,6 +16,7 @@ import variableeconomy.core.command.PayCommand;
 import variableeconomy.core.data.TransactionHistory;
 import variableeconomy.core.service.CoreServices;
 
+import java.util.List;
 import java.util.UUID;
 
 import static variableeconomy.core.gametest.CoreTestSupport.*;
@@ -106,6 +108,10 @@ public final class PayTests {
                 CoreApi.accounts().setActive(recipient.player, shared);
                 PayCommand.Attempt into = PayCommand.attempt(sender.player, recipient.player.getUUID(), 40);
                 helper.assertTrue(into.ok() && into.to().equals(shared), "into the account the recipient uses: " + into);
+                JsonObject lang = lang(CoreModule.MOD_ID);
+                for (String key : List.of("paid_account", "paid_fee_account", "received_account")) {
+                    helper.assertTrue(lang.has("command.variable_economy.pay." + key), "the messages name that account: " + key);
+                }
                 helper.assertValueEqual(CoreApi.money().balance(server, shared).orElseThrow(), 40L, "it's there");
                 CoreApi.accounts().setActive(sender.player, shared);
                 helper.assertValueEqual(PayCommand.attempt(sender.player, recipient.player.getUUID(), 10).key(), "same_account",

@@ -11,6 +11,7 @@ import variableeconomy.core.api.AccountResult;
 import variableeconomy.core.api.AccountRole;
 import variableeconomy.core.api.BankResult;
 import variableeconomy.core.api.CoreApi;
+import variableeconomy.core.data.AccountRegistry;
 import variableeconomy.core.service.AccountsService;
 import variableeconomy.core.service.CoreServices;
 import variableeconomy.core.service.Leaderboard;
@@ -21,7 +22,7 @@ import java.util.UUID;
 
 /**
  * The bank and Accounts screens' account changes, checked the way {@code /bank account} checks them: only an
- * account's owner manages it, nobody manages a personal or party account, and invitations are accepted by the
+ * account's owner manages it (removing an invited player who hasn't joined withdraws the invitation), nobody manages a personal or party account, and invitations are accepted by the
  * invited player. Each answers with the translation key players see. Server thread only.
  */
 public final class AccountRequests {
@@ -101,6 +102,10 @@ public final class AccountRequests {
                 if (request.player().equals(player.getUUID())) {
                     yield fail("remove_self", "");
                 }
+                if (info.roleOf(request.player()).isEmpty() && CoreServices.ACCOUNTS.cancelInvite(info.id(), request.player())) {
+                    // Not a member, but invited: the owner withdraws the invitation.
+                    yield ok("invite_cancelled", AccountsService.name(server, request.player()));
+                }
                 yield result(CoreApi.accounts().removeMember(server, info.id(), request.player()), "removed",
                         AccountsService.name(server, request.player()));
             }
@@ -143,14 +148,21 @@ public final class AccountRequests {
         return result(result, "invited", target.get().getName());
     }
 
-    /** A player by name: online, or one the server has seen. */
+    /**
+     * A player by name: online, or one the server has seen, from its profile cache or else by the name core remembered
+     * when they last joined.
+     */
     private static Optional<GameProfile> profile(MinecraftServer server, String name) {
         ServerPlayer online = server.getPlayerList().getPlayerByName(name);
         if (online != null) {
             return Optional.of(online.getGameProfile());
         }
-        return server.getProfileCache() == null ? Optional.empty() : server.getProfileCache().get(name)
+        Optional<GameProfile> cached = server.getProfileCache() == null ? Optional.empty() : server.getProfileCache().get(name)
                 .filter(profile -> Leaderboard.profile(server, profile.getId()).isPresent());
+        if (cached.isPresent()) {
+            return cached;
+        }
+        return AccountRegistry.get(server).personalByName(name).flatMap(id -> Leaderboard.profile(server, id));
     }
 
     private static String label(AccountInfo info) {

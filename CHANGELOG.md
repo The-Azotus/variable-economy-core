@@ -2,6 +2,16 @@
 
 What changed in each release of core, for players and server admins. Mod and add-on authors: the API's changes are in the [add-on guide's changelog](docs/api.md#changelog). The market, contracts and exchange keep their own changelogs in their repositories. Releases before 0.6.0 were Dynamic-Economy, a single mod, and aren't listed here.
 
+## 0.6.2 (unreleased)
+
+Update the server and every client together: the bank screen's packets changed, so a 0.6.1 client can't join a 0.6.2 server.
+
+- **Player names are remembered.** Core keeps the name each player last joined with, so the leaderboard, member lists, histories and the Accounts screen name players the server's own name cache has forgotten (it keeps only the 1,000 players seen most recently). Before, such players dropped off the leaderboard and showed as a UUID.
+- **Invitations can be withdrawn.** An account's owner withdraws an invitation nobody has answered with `/bank account remove <name> <player>`, or **Cancel** in the Accounts screen, which now lists open invitations after the members. `/bank account info` shows them to the owner. When an account changes owner, its open invitations end: the new owner didn't send them.
+- **`/pay` names the account.** When the recipient's active account is a named or party account, the sender's and the recipient's messages both name it.
+- **Depositing coins** now pays the account before taking the coins, so a refused deposit can never take them.
+- New textures for the Stack, Mark, Crown and Omega coins.
+
 ## 0.6.1 (2026-11-17)
 
 Variable Economy now lives in four repositories, one per mod; nothing changes in game. The mod's jar no longer contains its test code.
