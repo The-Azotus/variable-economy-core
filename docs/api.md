@@ -506,7 +506,7 @@ To use the market as well (show an item's price, sell turned-in items for a play
 
 ## Changelog
 
-- **0.6.3 (unreleased):** new `Accounts.name(server, player)`, a player's name from everything core knows, including the names it remembers for players vanilla's name cache has forgotten. An add-on that calls it requires core 0.6.3 or later in its `neoforge.mods.toml`.
+- **0.6.3 (2026-11-23):** new `Accounts.name(server, player)`, a player's name from everything core knows, including the names it remembers for players vanilla's name cache has forgotten. An add-on that calls it requires core 0.6.3 or later in its `neoforge.mods.toml`.
 
 - **0.6.2 (2026-11-21):** nothing in the API changed.
 

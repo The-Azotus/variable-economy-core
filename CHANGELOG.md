@@ -2,7 +2,7 @@
 
 What changed in each release of core, for players and server admins. Mod and add-on authors: the API's changes are in the [add-on guide's changelog](docs/api.md#changelog). The market, contracts and exchange keep their own changelogs in their repositories. Releases before 0.6.0 were Dynamic-Economy, a single mod, and aren't listed here.
 
-## 0.6.3 (unreleased)
+## 0.6.3 (2026-11-23)
 
 The network protocol is unchanged.
 
