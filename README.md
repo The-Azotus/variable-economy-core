@@ -119,7 +119,7 @@ Core's settings are in `config/variable_economy-server.toml`, created on first s
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `access_mode` | `COMMAND_AND_BLOCK` | `BLOCK_ONLY` keeps the bank to the Bank block and Bank Card. |
-| `ignored_components` | `["relics:data"]` | Item data that doesn't stop a copy counting as plain, for the add-ons' sales and deliveries. |
+| `ignored_components` | `["relics:data"]` | Item data that doesn't stop a copy counting as plain, for market sales, the market's tooltips and contract deliveries (not the exchange). |
 | `[accounts]` `extra_enabled` | `false` | Players can open named accounts. |
 | `[accounts]` `max_per_player` | `3` | Accounts one player may own, their personal one included. |
 | `[accounts]` `shared_enabled` | `false` | Named accounts can have members. |

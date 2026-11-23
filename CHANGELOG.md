@@ -2,6 +2,15 @@
 
 What changed in each release of core, for players and server admins. Mod and add-on authors: the API's changes are in the [add-on guide's changelog](docs/api.md#changelog). The market, contracts and exchange keep their own changelogs in their repositories. Releases before 0.6.0 were Dynamic-Economy, a single mod, and aren't listed here.
 
+## 0.6.3 (unreleased)
+
+The network protocol is unchanged.
+
+- **Fixed: withdrawing after death.** A withdraw from the bank screen that reached the server after the player died, with the screen still open, took the money and put the coins into an inventory that is thrown away on respawn. A dead player's bank and Accounts screen requests are now ignored.
+- **The bank screen's scrollbar can be dragged**: click it to jump there, or hold and drag.
+- **Add-ons can name players the server's name cache has forgotten**, through a new API call; the contracts and exchange add-ons use it for holders and posters.
+- The `ignored_components` setting's comment and the README say what it covers: market sales, the market's sell-price tooltips and contract deliveries, not the exchange.
+
 ## 0.6.2 (2026-11-21)
 
 Update the server and every client together: the bank screen's packets changed, so a 0.6.1 client can't join a 0.6.2 server.

@@ -187,6 +187,7 @@ A player's active account is the one they picked (in the bank screen, `/bank acc
 | Method | Thread | Does |
 | --- | --- | --- |
 | `AccountId personal(UUID player)` | any | The player's personal account's ID. |
+| `Optional<String> name(MinecraftServer server, UUID player)` | server | The player's name, online or not: the online player's, the server's name cache, then the name core remembered at their last login. Empty only for a player the server has never seen. Since 0.6.3. |
 | `AccountId active(ServerPlayer player)` | server | The account the player spends from and is paid into. Always one they may spend from. |
 | `BankResult setActive(ServerPlayer player, AccountId id)` | server | Makes another account the player's active one. Remembered across restarts. |
 | `Optional<AccountInfo> get(MinecraftServer server, AccountId id)` | server | The account as it is now: kind, name, owner, members and balance. Empty if there's no such account, or it has ended. |
@@ -504,6 +505,8 @@ final class EconomyHooks {
 To use the market as well (show an item's price, sell turned-in items for a player, count items sold for a quest), add a second class for everything that touches `variableeconomy.market.api`, behind its own check of `variable_economy_market`, as the [market's guide](https://github.com/The-Azotus/variable-economy-market/blob/main/docs/api.md) describes.
 
 ## Changelog
+
+- **0.6.3 (unreleased):** new `Accounts.name(server, player)`, a player's name from everything core knows, including the names it remembers for players vanilla's name cache has forgotten. An add-on that calls it requires core 0.6.3 or later in its `neoforge.mods.toml`.
 
 - **0.6.2 (2026-11-21):** nothing in the API changed.
 

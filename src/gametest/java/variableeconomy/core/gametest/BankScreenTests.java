@@ -214,4 +214,22 @@ public final class BankScreenTests {
         });
         helper.succeed();
     }
+
+    /** Vanilla keeps the screen open through death; a dead player's withdraw would put coins into a lost inventory. */
+    @GameTest(template = EMPTY)
+    public static void aDeadPlayerCantWithdraw(GameTestHelper helper) {
+        CoreFixture f = new CoreFixture(helper);
+        f.deposit(5000);
+        f.player.setHealth(0);
+        f.player.containerMenu = BankMenu.forCommand();
+        try {
+            BankSync.handleBankRequest(new BankPayloads.BankRequest(false, 1000, java.util.Optional.empty()), f.player);
+        } finally {
+            f.player.containerMenu = f.player.inventoryMenu;
+        }
+        helper.assertValueEqual(f.balance(), 5000, "nothing withdrawn");
+        helper.assertTrue(f.player.getInventory().items.stream().allMatch(net.minecraft.world.item.ItemStack::isEmpty), "no coins given");
+        f.account().deduct(f.balance());
+        helper.succeed();
+    }
 }

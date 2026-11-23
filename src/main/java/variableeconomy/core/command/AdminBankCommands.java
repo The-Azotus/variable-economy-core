@@ -91,7 +91,7 @@ public final class AdminBankCommands {
         for (AccountInfo info : accounts) {
             String role = info.roleOf(profile.getId()).map(r -> r.name().toLowerCase(Locale.ROOT)).orElse("?");
             String line = "  %s (%s, %s, owner %s, %d member(s)): %s bits".formatted(info.name(),
-                    info.kind().name().toLowerCase(Locale.ROOT), role, AccountsService.name(server, info.owner()),
+                    info.kind().name().toLowerCase(Locale.ROOT), role, AccountsService.nameOrId(server, info.owner()),
                     info.members().size(), amount(info.balance()));
             ctx.getSource().sendSuccess(() -> Component.literal(line), false);
         }

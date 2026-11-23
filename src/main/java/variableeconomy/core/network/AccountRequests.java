@@ -104,10 +104,10 @@ public final class AccountRequests {
                 }
                 if (info.roleOf(request.player()).isEmpty() && CoreServices.ACCOUNTS.cancelInvite(info.id(), request.player())) {
                     // Not a member, but invited: the owner withdraws the invitation.
-                    yield ok("invite_cancelled", AccountsService.name(server, request.player()));
+                    yield ok("invite_cancelled", AccountsService.nameOrId(server, request.player()));
                 }
                 yield result(CoreApi.accounts().removeMember(server, info.id(), request.player()), "removed",
-                        AccountsService.name(server, request.player()));
+                        AccountsService.nameOrId(server, request.player()));
             }
             case SET_ROLE -> {
                 if (request.player().equals(player.getUUID())) {
@@ -117,7 +117,7 @@ public final class AccountRequests {
                     yield result(BankResult.NOT_A_MEMBER, "", "");
                 }
                 yield result(CoreApi.accounts().setMember(server, info.id(), request.player(), request.role()), "role_set",
-                        AccountsService.name(server, request.player()));
+                        AccountsService.nameOrId(server, request.player()));
             }
             default -> fail("not_yours", "");
         };

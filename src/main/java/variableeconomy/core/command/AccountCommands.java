@@ -105,10 +105,10 @@ public final class AccountCommands {
             if (i > 0) {
                 members.append(", ");
             }
-            members.append(Component.translatable(KEY + "info.member", AccountsService.name(player.server, member.player()), role(member.role())));
+            members.append(Component.translatable(KEY + "info.member", AccountsService.nameOrId(player.server, member.player()), role(member.role())));
         }
         ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "info", label(info), kind(info.kind()),
-                AccountsService.name(player.server, info.owner()), members, CoreApi.formatMoney(info.balance())), false);
+                AccountsService.nameOrId(player.server, info.owner()), members, CoreApi.formatMoney(info.balance())), false);
         // The owner also sees whom they have invited, so they can withdraw an invitation with "remove".
         Map<UUID, AccountRole> invited = info.owner().equals(player.getUUID()) ? CoreServices.ACCOUNTS.invitedTo(info.id()) : Map.of();
         if (!invited.isEmpty()) {
@@ -117,7 +117,7 @@ public final class AccountCommands {
                 if (!list.getSiblings().isEmpty()) {
                     list.append(", ");
                 }
-                list.append(Component.translatable(KEY + "info.member", AccountsService.name(player.server, who), role(offered)));
+                list.append(Component.translatable(KEY + "info.member", AccountsService.nameOrId(player.server, who), role(offered)));
             });
             ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "info.invited", list), false);
         }
