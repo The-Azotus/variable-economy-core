@@ -39,7 +39,7 @@ An add-on's package is there only when that add-on is installed, so check its mo
 
 Core and each add-on live in their own repositories and are released separately, each with its own version. The released mod jars are on CurseForge. Use core **0.6.0** or later: 0.5.0, the first version with an API, was Dynamic-Economy, before the mod was renamed and split, and its API is gone (see the [changelog](#changelog)).
 
-Depend on the released jars through [CurseMaven](https://www.cursemaven.com/), as `curse.maven:<name>-<project id>:<file id>` (the name is yours to choose; the IDs are CurseForge's). Core is CurseForge project **1818087**; its 0.6.1 file is 9710072, so core 0.6.1 is `curse.maven:variable-economy-1818087:9710072`. Each add-on's guide gives its own IDs. CurseMaven serves only the mod jars, without sources or javadoc.
+Depend on the released jars through [CurseMaven](https://www.cursemaven.com/), as `curse.maven:<name>-<project id>:<file id>` (the name is yours to choose; the IDs are CurseForge's). Core is CurseForge project **1818087**; its 0.6.3 file is 9777943, so core 0.6.3 is `curse.maven:variable-economy-1818087:9777943`. Each add-on's guide gives its own IDs. CurseMaven serves only the mod jars, without sources or javadoc.
 
 For the sources and javadoc, or to build against an unreleased core, publish core to your local Maven from this repository: clone it, check out the tag you target (tags start with `v`, such as `v0.6.1`), and run `gradlew publishToMavenLocal`. That publishes `variableeconomy:core:<version>`, the version without the `v` (`0.6.1`), with a sources jar and a javadoc jar, so your IDE shows the javadoc and the source. The javadoc covers only core's API packages. Each add-on's repository publishes its own artifact the same way (`variableeconomy:market:<version>` and so on), and its guide says how to use it.
 
@@ -63,8 +63,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly 'curse.maven:variable-economy-1818087:9710072'
-    localRuntime 'curse.maven:variable-economy-1818087:9710072'
+    compileOnly 'curse.maven:variable-economy-1818087:9777943'
+    localRuntime 'curse.maven:variable-economy-1818087:9777943'
 }
 ```
 
@@ -82,8 +82,8 @@ val localRuntime: Configuration by configurations.creating
 configurations.runtimeClasspath { extendsFrom(localRuntime) }
 
 dependencies {
-    compileOnly("curse.maven:variable-economy-1818087:9710072")
-    localRuntime("curse.maven:variable-economy-1818087:9710072")
+    compileOnly("curse.maven:variable-economy-1818087:9777943")
+    localRuntime("curse.maven:variable-economy-1818087:9777943")
 }
 ```
 
