@@ -87,7 +87,7 @@ dependencies {
 }
 ```
 
-From your local Maven instead (after `gradlew publishToMavenLocal` here), the repository is `mavenLocal()` with `includeGroup 'variableeconomy'`, and core is `variableeconomy:core:0.6.1`; that one comes with its sources and javadoc.
+From your local Maven instead (after `gradlew publishToMavenLocal` here), the repository is `mavenLocal()` with `includeGroup 'variableeconomy'`, and core is `variableeconomy:core:0.6.3`; that one comes with its sources and javadoc.
 
 - The `exclusiveContent` block takes only that group from that repository, and nothing else from it.
 - The published POM names no dependencies. Core's own optional dependencies (FTB Teams, ProgressiveStages, KubeJS) aren't pulled in: add one to your dev runtime yourself if your add-on works with it. An add-on you build against too (the market, say) is a dependency of its own, next to core.
