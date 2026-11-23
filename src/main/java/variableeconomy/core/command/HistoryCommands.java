@@ -128,7 +128,7 @@ public final class HistoryCommands {
         ctx.getSource().sendSuccess(() -> Component.translatable(KEY + "header", name, shown, pages), false);
         long now = System.currentTimeMillis();
         for (TransactionHistory.Line line : TransactionHistory.page(lines, shown, PER_PAGE)) {
-            Component by = line.actor().<Component>map(actor -> Component.translatable(KEY + "by", AccountsService.name(server, actor)))
+            Component by = line.actor().<Component>map(actor -> Component.translatable(KEY + "by", AccountsService.nameOrId(server, actor)))
                     .orElse(Component.empty());
             Component text = Component.translatable(KEY + "line", ago(now, line.time()), signed(line.amount()), reason(line.reason()), by,
                     CoreApi.formatMoney(line.balance()));

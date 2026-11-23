@@ -54,7 +54,7 @@ public final class AccountsService implements Accounts {
     public static final String PARTY_WORD = "party";
 
     /** Pending invitations: invited player, then account, then the role offered. Not saved. */
-    private final Map<UUID, Map<AccountId, AccountRole>> invites = new HashMap<>();
+    private final Map<UUID, Map<AccountId, AccountRole>> invites = new LinkedHashMap<>();
 
     @Override
     public AccountId personal(UUID player) {
@@ -529,7 +529,7 @@ public final class AccountsService implements Accounts {
     /** Registers {@code player}'s personal account, posting its creation if it is new. */
     public void seenPlayer(MinecraftServer server, UUID player) {
         if (AccountRegistry.get(server).registerPersonal(player)) {
-            CoreEvents.post(new AccountEvent.Created(server, personal(player), AccountKind.PERSONAL, player, name(server, player)));
+            CoreEvents.post(new AccountEvent.Created(server, personal(player), AccountKind.PERSONAL, player, nameOrId(server, player)));
         }
     }
 
@@ -584,8 +584,15 @@ public final class AccountsService implements Accounts {
     }
 
     /** A player's name when the server knows it, otherwise their UUID. */
-    public static String name(MinecraftServer server, UUID player) {
+    public static String nameOrId(MinecraftServer server, UUID player) {
         return Leaderboard.profile(server, player).map(GameProfile::getName).orElse(player.toString());
+    }
+
+    @Override
+    public Optional<String> name(MinecraftServer server, UUID player) {
+        CoreServices.requireServerThread(server);
+        Objects.requireNonNull(player, "player");
+        return Leaderboard.profile(server, player).map(GameProfile::getName);
     }
 
     // ---- Helpers ---------------------------------------------------------------------------------------------
@@ -621,7 +628,7 @@ public final class AccountsService implements Accounts {
 
     private AccountInfo personalInfo(MinecraftServer server, UUID player) {
         long balance = OwnBank.get(server).accountOf(player).balance();
-        return new AccountInfo(personal(player), AccountKind.PERSONAL, name(server, player), player,
+        return new AccountInfo(personal(player), AccountKind.PERSONAL, nameOrId(server, player), player,
                 List.of(new AccountMember(player, AccountRole.OWNER)), balance);
     }
 

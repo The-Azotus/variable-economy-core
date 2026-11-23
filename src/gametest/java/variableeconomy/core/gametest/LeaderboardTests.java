@@ -104,7 +104,9 @@ public final class LeaderboardTests {
                 "test players aren't in the profile cache");
         helper.assertValueEqual(AccountRegistry.get(server).personalName(me), Optional.of("market-test"), "core remembered the name");
         helper.assertValueEqual(Leaderboard.profile(server, me).map(GameProfile::getName), Optional.of("market-test"), "so they are named");
-        helper.assertValueEqual(AccountsService.name(server, me), "market-test", "in member lists and history too");
+        helper.assertValueEqual(AccountsService.nameOrId(server, me), "market-test", "in member lists and history too");
+        helper.assertValueEqual(CoreApi.accounts().name(server, me), Optional.of("market-test"), "and through the API, for add-ons");
+        helper.assertValueEqual(CoreApi.accounts().name(server, UUID.randomUUID()), Optional.empty(), "a player never seen has no name");
 
         // A name several players joined with names none of them; a unique one names its player.
         UUID unique = UUID.randomUUID();

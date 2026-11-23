@@ -40,11 +40,12 @@ public final class CoreConfig {
                         "(level 2) can't open the bank by command; operators and the console always can.")
                 .defineEnum("access_mode", AccessMode.COMMAND_AND_BLOCK);
         IGNORED_COMPONENTS = builder
-                .comment("Item data ignored when deciding whether a copy is plain enough to sell or deliver. The market",
-                        "only buys items as they come fresh (not enchanted, damaged or renamed), but some mods add data to",
-                        "every copy a player holds: Relics (and Reliquified Artifacts) adds relics:data, its levels and",
-                        "rolled stats, as soon as a relic is in an inventory. Data listed here doesn't stop a sale; it is",
-                        "lost with the item, and bought items always come fresh. List data component IDs.")
+                .comment("Item data ignored when deciding whether a copy is plain enough for market sales, the market's",
+                        "sell-price tooltips and contract deliveries. Those only take items as they come fresh (not enchanted,",
+                        "damaged or renamed), but some mods add data to every copy a player holds: Relics (and Reliquified",
+                        "Artifacts) adds relics:data, its levels and rolled stats, as soon as a relic is in an inventory. Data",
+                        "listed here doesn't stop a sale or delivery; it is lost with the item, and bought items always come",
+                        "fresh. It doesn't apply to the exchange, which lists items with data as they are. List data component IDs.")
                 .defineListAllowEmpty("ignored_components", List.of("relics:data"),
                         () -> "relics:data", id -> id instanceof String s && ResourceLocation.tryParse(s) != null);
 

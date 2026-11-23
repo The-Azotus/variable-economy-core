@@ -65,8 +65,13 @@ public final class BankSync {
                 .toList();
     }
 
+    /**
+     * Whether the player has the bank screen open and may act on it. A dead player may not: vanilla keeps the screen
+     * open through death, and coins withdrawn into a dead player's inventory would be lost on respawn.
+     */
     static boolean viewing(ServerPlayer player) {
-        return player.containerMenu instanceof BankMenu menu && menu.stillValid(player);
+        return player.containerMenu instanceof BankMenu menu && menu.stillValid(player)
+                && player.isAlive() && !player.isRemoved();
     }
 
     /** Call right after the bank screen opens. The screen asks for the leaderboard itself. */
@@ -116,14 +121,14 @@ public final class BankSync {
             accounts.add(new BankPayloads.AccountLine(info.id().value(), cut(info.name()), info.kind(), role, info.balance(), info.owner()));
             if (info.id().equals(showing) && info.kind() != AccountKind.PERSONAL) {
                 for (AccountMember member : info.members()) {
-                    members.add(new BankPayloads.MemberLine(member.player(), cut(AccountsService.name(server, member.player())), member.role(), false));
+                    members.add(new BankPayloads.MemberLine(member.player(), cut(AccountsService.nameOrId(server, member.player())), member.role(), false));
                 }
                 if (info.owner().equals(me) && info.kind() == AccountKind.NAMED) {
                     // The owner also sees the invitations still open, to withdraw them.
                     // The packet holds at most MAX_MEMBER_LINES lines.
                     CoreServices.ACCOUNTS.invitedTo(info.id()).forEach((invitee, offered) -> {
                         if (members.size() < BankPayloads.MAX_MEMBER_LINES) {
-                            members.add(new BankPayloads.MemberLine(invitee, cut(AccountsService.name(server, invitee)), offered, true));
+                            members.add(new BankPayloads.MemberLine(invitee, cut(AccountsService.nameOrId(server, invitee)), offered, true));
                         }
                     });
                 }
@@ -299,7 +304,7 @@ public final class BankSync {
         Map<UUID, String> names = new HashMap<>();
         for (variableeconomy.core.data.TransactionHistory.Line line
                 : variableeconomy.core.data.TransactionHistory.get(player.server).of(account.value())) {
-            String actor = line.actor().map(id -> names.computeIfAbsent(id, who -> cut(AccountsService.name(player.server, who)))).orElse("");
+            String actor = line.actor().map(id -> names.computeIfAbsent(id, who -> cut(AccountsService.nameOrId(player.server, who)))).orElse("");
             lines.add(new BankPayloads.HistoryLine(line.time(), line.amount(), line.reason().toString(), actor, line.balance()));
         }
         return new BankPayloads.History(account.value(), BankPayloads.HistoryAccess.OK, lines);

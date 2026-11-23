@@ -35,6 +35,17 @@ public interface Accounts {
     AccountId personal(UUID player);
 
     /**
+     * A player's name, online or not: the online player's, then the server's profile cache, then the name core
+     * remembered when they last joined. Unlike the profile cache alone, this finds every player the server has seen.
+     *
+     * @param server the server
+     * @param player the player's UUID
+     * @return their name, or empty for a player the server has never seen
+     * @since 0.6.3
+     */
+    Optional<String> name(MinecraftServer server, UUID player);
+
+    /**
      * The account as it is now.
      *
      * @param server the server

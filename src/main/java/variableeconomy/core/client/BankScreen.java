@@ -114,6 +114,8 @@ public final class BankScreen extends AbstractContainerScreen<BankMenu> {
     private int depositY;
     private int statusY;
     private int scroll;
+    /** Whether the scrollbar's thumb is being dragged. */
+    private boolean draggingScrollbar;
 
     public BankScreen(BankMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -358,6 +360,12 @@ public final class BankScreen extends AbstractContainerScreen<BankMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && isOverScrollbar(mouseX, mouseY)) {
+            // A click on the track jumps there; holding the button drags the thumb.
+            draggingScrollbar = true;
+            scrollTo(mouseY);
+            return true;
+        }
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             int coin = coinAt(mouseX, mouseY);
             if (coin >= 0) {
@@ -417,6 +425,48 @@ public final class BankScreen extends AbstractContainerScreen<BankMenu> {
             }
         }
         return -1;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (draggingScrollbar) {
+            scrollTo(mouseY);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (draggingScrollbar && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            draggingScrollbar = false;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    /** Whether the mouse is on the scrollbar of a list long enough to scroll. */
+    private boolean isOverScrollbar(double mouseX, double mouseY) {
+        double x = mouseX - leftPos - (LIST_X + listWidth + 2);
+        double y = mouseY - topPos - LIST_Y;
+        return maxScroll() > 0 && x >= -1 && x < SCROLLBAR_WIDTH + 1 && y >= 0 && y < rows * ROW_HEIGHT;
+    }
+
+    /** Scrolls so the thumb's middle sits at {@code mouseY}, as far as the list allows. */
+    private void scrollTo(double mouseY) {
+        int height = rows * ROW_HEIGHT;
+        int thumb = thumbHeight();
+        if (height <= thumb || maxScroll() == 0) {
+            return;
+        }
+        double fraction = (mouseY - topPos - LIST_Y - thumb / 2.0) / (height - thumb);
+        scroll = Mth.clamp((int) Math.round(fraction * maxScroll()), 0, maxScroll());
+    }
+
+    /** The scrollbar thumb's height: the share of the list that shows, at least 12 pixels. */
+    private int thumbHeight() {
+        int height = rows * ROW_HEIGHT;
+        return Math.min(height, Math.max(12, height * rows / (rows + maxScroll())));
     }
 
     private int maxScroll() {
@@ -548,7 +598,7 @@ public final class BankScreen extends AbstractContainerScreen<BankMenu> {
         int height = rows * ROW_HEIGHT;
         graphics.fill(left, top, left + SCROLLBAR_WIDTH, top + height, 0x40000000);
         if (maxScroll() > 0) {
-            int thumb = Math.max(12, height * rows / (rows + maxScroll()));
+            int thumb = thumbHeight();
             int thumbY = top + (height - thumb) * scroll / maxScroll();
             graphics.fill(left, thumbY, left + SCROLLBAR_WIDTH, thumbY + thumb, 0xFFA0A0A8);
         }
